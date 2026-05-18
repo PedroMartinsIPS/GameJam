@@ -7,7 +7,11 @@ public class PlayerController : MonoBehaviour
 
     public int treasureCount = 0;
 
-    Rigidbody2D rb;
+    public UIManager uiManager;
+
+    private Rigidbody2D rb;
+    private bool isGrounded;
+    
 
     void Start()
     {
@@ -24,27 +28,44 @@ public class PlayerController : MonoBehaviour
     {
         float move = Input.GetAxis("Horizontal");
 
-        float speed = baseSpeed - (treasureCount * 0.3f);
+        float currentSpeed = baseSpeed - (treasureCount * 0.3f);
 
-        speed = Mathf.Clamp(speed, 2f, baseSpeed);
+        currentSpeed = Mathf.Clamp(currentSpeed, 2f, baseSpeed);
 
-        rb.linearVelocity = new Vector2(move * speed, rb.linearVelocity.y);
+        rb.linearVelocity = new Vector2(move * currentSpeed, rb.linearVelocity.y);
     }
 
     void Jump()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
-            float jumpForce = baseJump - (treasureCount * 0.4f);
+            float currentJump = baseJump - (treasureCount * 0.4f);
 
-            jumpForce = Mathf.Clamp(jumpForce, 4f, baseJump);
+            currentJump = Mathf.Clamp(currentJump, 4f, baseJump);
 
-            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+            rb.AddForce(Vector2.up * currentJump, ForceMode2D.Impulse);
+        }
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = true;
+        }
+    }
+
+    void OnCollisionExit2D(Collision2D collision)
+    {
+        if(collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = false;
         }
     }
 
     public void AddTreasure()
     {
         treasureCount++;
-    }
+        uiManager.UpdateTreasure(treasureCount);
+    }  
 }
