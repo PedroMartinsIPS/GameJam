@@ -7,11 +7,13 @@ public class PlayerController : MonoBehaviour
 
     public int treasureCount = 0;
 
-    public UIManager uiManager;
+    public UIManager uiManager; 
 
     private Rigidbody2D rb;
     private bool isGrounded;
     
+    private float moveInput;
+    private bool jumpRequested;
 
     void Start()
     {
@@ -20,30 +22,40 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        moveInput = Input.GetAxis("Horizontal");
+
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        {
+            jumpRequested = true;
+        }
+    }
+
+    void FixedUpdate()
+    {
         Move();
         Jump();
     }
 
     void Move()
     {
-        float move = Input.GetAxis("Horizontal");
-
         float currentSpeed = baseSpeed - (treasureCount * 0.3f);
-
         currentSpeed = Mathf.Clamp(currentSpeed, 2f, baseSpeed);
 
-        rb.linearVelocity = new Vector2(move * currentSpeed, rb.linearVelocity.y);
+        rb.linearVelocity = new Vector2(moveInput * currentSpeed, rb.linearVelocity.y);
     }
 
     void Jump()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        if (jumpRequested)
         {
             float currentJump = baseJump - (treasureCount * 0.4f);
-
             currentJump = Mathf.Clamp(currentJump, 4f, baseJump);
 
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+
             rb.AddForce(Vector2.up * currentJump, ForceMode2D.Impulse);
+            
+            jumpRequested = false; 
         }
     }
 
@@ -66,6 +78,10 @@ public class PlayerController : MonoBehaviour
     public void AddTreasure()
     {
         treasureCount++;
-        uiManager.UpdateTreasure(treasureCount);
+        
+        if (uiManager != null)
+        {
+            uiManager.UpdateTreasure(treasureCount);
+        }
     }  
 }
