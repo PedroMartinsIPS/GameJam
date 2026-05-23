@@ -29,17 +29,14 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        // Verifica se está no chão
         isGrounded = Physics2D.OverlapCircle(
             groundCheck.position,
             groundCheckRadius,
             groundLayer
         );
 
-        // Movimento horizontal
         moveInput = Input.GetAxis("Horizontal");
 
-        // Pedido de salto
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             jumpRequested = true;
@@ -54,7 +51,7 @@ public class PlayerController : MonoBehaviour
 
     void Move()
     {
-        float currentSpeed = baseSpeed - (treasureCount * 0.3f);
+        float currentSpeed = baseSpeed - (treasureCount * 0.5f);
 
         currentSpeed = Mathf.Clamp(
             currentSpeed,
@@ -72,7 +69,7 @@ public class PlayerController : MonoBehaviour
     {
         if (!jumpRequested) return;
 
-        float currentJump = baseJump - (treasureCount * 0.4f);
+        float currentJump = baseJump - (treasureCount * 0.5f);
 
         currentJump = Mathf.Clamp(
             currentJump,
