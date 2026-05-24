@@ -3,9 +3,11 @@ using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
+    public static string currentLevel = "Nivel1";
+
     public void StartGame()
     {
-        SceneManager.LoadScene("Game");
+        SceneManager.LoadScene("Nivel1");
     }
 
     public void QuitGame()
@@ -15,5 +17,10 @@ public class MenuManager : MonoBehaviour
 
     public void MenuGame(){
         SceneManager.LoadScene("Menu");
+    }
+
+    public void TryAgain()
+    {
+        SceneManager.LoadScene(currentLevel);
     }
 }

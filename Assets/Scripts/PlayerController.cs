@@ -17,14 +17,17 @@ public class PlayerController : MonoBehaviour
     public float groundCheckRadius = 0.2f;
 
     private Rigidbody2D rb;
-    private bool isGrounded;
+    private Animator anim; 
 
+    private bool isGrounded;
     private float moveInput;
     private bool jumpRequested;
+    private bool isFacingRight = true; 
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>(); 
     }
 
     void Update()
@@ -41,6 +44,18 @@ public class PlayerController : MonoBehaviour
         {
             jumpRequested = true;
         }
+
+        if (moveInput > 0 && !isFacingRight)
+        {
+            Flip();
+        }
+        else if (moveInput < 0 && isFacingRight)
+        {
+            Flip();
+        }
+        anim.SetFloat("speed", Mathf.Abs(rb.linearVelocity.x));
+        
+        anim.SetBool("isGrounded", isGrounded);
     }
 
     void FixedUpdate()
@@ -52,17 +67,9 @@ public class PlayerController : MonoBehaviour
     void Move()
     {
         float currentSpeed = baseSpeed - (treasureCount * 0.5f);
+        currentSpeed = Mathf.Clamp(currentSpeed, 2f, baseSpeed);
 
-        currentSpeed = Mathf.Clamp(
-            currentSpeed,
-            2f,
-            baseSpeed
-        );
-
-        rb.linearVelocity = new Vector2(
-            moveInput * currentSpeed,
-            rb.linearVelocity.y
-        );
+        rb.linearVelocity = new Vector2(moveInput * currentSpeed, rb.linearVelocity.y);
     }
 
     void Jump()
@@ -70,30 +77,25 @@ public class PlayerController : MonoBehaviour
         if (!jumpRequested) return;
 
         float currentJump = baseJump - (treasureCount * 0.5f);
+        currentJump = Mathf.Clamp(currentJump, 4f, baseJump);
 
-        currentJump = Mathf.Clamp(
-            currentJump,
-            4f,
-            baseJump
-        );
-
-        rb.linearVelocity = new Vector2(
-            rb.linearVelocity.x,
-            0f
-        );
-
-        rb.AddForce(
-            Vector2.up * currentJump,
-            ForceMode2D.Impulse
-        );
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+        rb.AddForce(Vector2.up * currentJump, ForceMode2D.Impulse);
 
         jumpRequested = false;
+    }
+
+    void Flip()
+    {
+        isFacingRight = !isFacingRight;
+        Vector3 scaler = transform.localScale;
+        scaler.x *= -1;
+        transform.localScale = scaler;
     }
 
     public void AddTreasure()
     {
         treasureCount++;
-
         if (uiManager != null)
         {
             uiManager.UpdateTreasure(treasureCount);
@@ -108,55 +110,44 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("MovingPlatform"))
+        {
+            transform.SetParent(collision.transform);
+        }
+
+        foreach (ContactPoint2D ponto in collision.contacts)
+        {
+            if (ponto.normal.y < 0.5f && rb.linearVelocity.y > 0f)
+            {
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+            }
+        }
+    }
+
+    void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("MovingPlatform"))
+        {
+            if (gameObject.activeInHierarchy)
+            {
+                transform.SetParent(null);
+            }
+        }
+    }
+
     void Die()
     {
         GameManager.FinalTreasureCount = treasureCount;
-
+        MenuManager.currentLevel = SceneManager.GetActiveScene().name;
         SceneManager.LoadScene("Lose");
     }
 
     void OnDrawGizmos()
     {
         if (groundCheck == null) return;
-
         Gizmos.color = Color.red;
-
-        Gizmos.DrawWireSphere(
-            groundCheck.position,
-            groundCheckRadius
-        );
-    }
-
-    void OnCollisionStay2D(Collision2D collision)
-{
-    foreach (ContactPoint2D ponto in collision.contacts)
-    {
-        if (Mathf.Abs(ponto.normal.x) > 0.5f)
-        {
-            if (rb.linearVelocity.y > 0f)
-            {
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
-            }
-        }
-    }
-}
-
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        if(collision.gameObject.CompareTag("MovingPlatform"))
-        {
-            transform.SetParent(collision.transform);
-        }
-    }
-
-    void OnCollisionExit2D(Collision2D collision)
-    {
-        if(collision.gameObject.CompareTag("MovingPlatform"))
-        {
-            if(gameObject.activeInHierarchy)
-            {
-                transform.SetParent(null);
-            }
-        }
+        Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
     }
 }
