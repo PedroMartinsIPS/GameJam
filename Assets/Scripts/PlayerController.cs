@@ -127,7 +127,19 @@ public class PlayerController : MonoBehaviour
         );
     }
 
-
+    void OnCollisionStay2D(Collision2D collision)
+{
+    foreach (ContactPoint2D ponto in collision.contacts)
+    {
+        if (Mathf.Abs(ponto.normal.x) > 0.5f)
+        {
+            if (rb.linearVelocity.y > 0f)
+            {
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+            }
+        }
+    }
+}
 
     void OnCollisionEnter2D(Collision2D collision)
     {
