@@ -11,10 +11,14 @@ public class PlayerController : MonoBehaviour
     public int treasureCount = 0;
     public UIManager uiManager;
 
+    [Header("Audio")]
+    public AudioClip coinSound; 
+
     [Header("Ground Check")]
     public Transform groundCheck;
     public LayerMask groundLayer;
     public float groundCheckRadius = 0.2f;
+    
 
     private Rigidbody2D rb;
     private Animator anim; 
@@ -99,6 +103,11 @@ public class PlayerController : MonoBehaviour
         if (uiManager != null)
         {
             uiManager.UpdateTreasure(treasureCount);
+        }
+
+        if (coinSound != null)
+        {
+            AudioSource.PlayClipAtPoint(coinSound, transform.position);
         }
     }
 
